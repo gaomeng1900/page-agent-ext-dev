@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Page Agent Test</title>
+		<style>
+			body {
+				font-family: system-ui, -apple-system, sans-serif;
+				max-width: 800px;
+				margin: 40px auto;
+				padding: 20px;
+				line-height: 1.6;
+			}
+
+			h1 {
+				color: #333;
+			}
+
+			.section {
+				margin: 30px 0;
+				padding: 20px;
+				background: #f5f5f5;
+				border-radius: 8px;
+			}
+
+			button {
+				padding: 10px 20px;
+				margin: 5px;
+				font-size: 14px;
+				cursor: pointer;
+				background: #007bff;
+				color: white;
+				border: none;
+				border-radius: 4px;
+			}
+
+			button:hover {
+				background: #0056b3;
+			}
+
+			pre {
+				background: #fff;
+				padding: 15px;
+				border-radius: 4px;
+				overflow-x: auto;
+			}
+
+			#output {
+				min-height: 100px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>🚀 Page Agent Extension Test</h1>
+
+		<div class="section">
+			<h2>测试 1: 获取所有 Tabs</h2>
+			<button onclick="testGetTabs()">运行 getTabs()</button>
+			<pre id="output1">点击按钮运行测试...</pre>
+		</div>
+
+		<div class="section">
+			<h2>测试 2: 在当前 Tab 执行代码</h2>
+			<button onclick="testExecuteCurrent()">
+				运行 execute() - 获取当前页面标题
+			</button>
+			<pre id="output2">点击按钮运行测试...</pre>
+		</div>
+
+		<div class="section">
+			<h2>测试 3: 在其他 Tab 执行代码</h2>
+			<p>先打开几个其他 tab，然后点击下面的按钮</p>
+			<button onclick="testExecuteOther()">
+				在第一个 Tab 中获取标题
+			</button>
+			<pre id="output3">点击按钮运行测试...</pre>
+		</div>
+
+		<script>
+			async function testGetTabs() {
+				const output = document.getElementById('output1')
+				try {
+					output.textContent = '正在获取 tabs...'
+					const tabs = await getTabs()
+					output.textContent = JSON.stringify(tabs, null, 2)
+				} catch (error) {
+					output.textContent = `错误: ${error.message}`
+					console.error(error)
+				}
+			}
+
+			async function testExecuteCurrent() {
+				const output = document.getElementById('output2')
+				try {
+					output.textContent = '正在执行代码...'
+					const tabs = await getTabs()
+					const currentTab = tabs.find((t) => t.active)
+
+					if (!currentTab) {
+						throw new Error('找不到当前 tab')
+					}
+
+					const result = await execute(
+						currentTab.id,
+						'document.title',
+					)
+					output.textContent = `执行结果:\n${JSON.stringify(
+						result,
+						null,
+						2,
+					)}`
+				} catch (error) {
+					output.textContent = `错误: ${error.message}`
+					console.error(error)
+				}
+			}
+
+			async function testExecuteOther() {
+				const output = document.getElementById('output3')
+				try {
+					output.textContent = '正在执行代码...'
+					const tabs = await getTabs()
+
+					if (tabs.length < 2) {
+						output.textContent = '请先打开至少 2 个 tabs'
+						return
+					}
+
+					const firstTab = tabs[0]
+					const result = await execute(firstTab.id, 'document.title')
+
+					output.textContent = `在 Tab ${firstTab.id} (${
+						firstTab.title
+					}) 中执行结果:\n${JSON.stringify(result, null, 2)}`
+				} catch (error) {
+					output.textContent = `错误: ${error.message}`
+					console.error(error)
+				}
+			}
+		</script>
+	</body>
+</html>

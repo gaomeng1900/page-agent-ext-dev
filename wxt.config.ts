@@ -7,4 +7,12 @@ export default defineConfig({
 	vite: () => ({
 		plugins: [tailwindcss()],
 	}),
+	manifest: {
+		web_accessible_resources: [
+			{
+				resources: ['main-world.js'],
+				matches: ['<all_urls>'],
+			},
+		],
+	},
 })
