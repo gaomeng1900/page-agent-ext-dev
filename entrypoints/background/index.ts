@@ -1,3 +1,5 @@
+import chalk from 'chalk'
+
 // 生成随机 UUID
 function generateUUID(): string {
 	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
@@ -10,8 +12,31 @@ function generateUUID(): string {
 	)
 }
 
-// 存储认证信息：tabId -> 是否已认证
-const authenticatedTabs = new Map<number, boolean>()
+// 美化日志
+function logMessage(
+	direction: 'incoming' | 'outgoing',
+	type: string,
+	data?: any,
+) {
+	const timestamp = new Date().toLocaleTimeString()
+	const arrow = direction === 'incoming' ? '📥' : '📤'
+	const color = direction === 'incoming' ? chalk.cyan : chalk.green
+
+	console.log(
+		color.bold(`\n${arrow} [${timestamp}] ${direction.toUpperCase()}`),
+	)
+	console.log(chalk.yellow(`   Type: ${type}`))
+
+	if (data) {
+		console.log(chalk.gray('   Data:'), data)
+	}
+}
+
+// 存储认证信息：sessionId -> { key: string, tabId: number }
+const authenticatedSessions = new Map<
+	string,
+	{ key: string; tabId: number; timestamp: number }
+>()
 
 // 生成并存储 API key
 let apiKey = generateUUID()
@@ -20,7 +45,22 @@ let apiKey = generateUUID()
 console.log('Generated new API key:', apiKey)
 
 export default defineBackground(() => {
-	console.log('Background service worker started')
+	console.log(chalk.magenta.bold('\n🚀 Background service worker started'))
+	console.log(chalk.yellow(`   API Key: ${apiKey}\n`))
+
+	// 监听 tab 关闭事件，清理该 tab 的所有 session
+	chrome.tabs.onRemoved.addListener((tabId) => {
+		for (const [sessionId, session] of authenticatedSessions.entries()) {
+			if (session.tabId === tabId) {
+				authenticatedSessions.delete(sessionId)
+				console.log(
+					chalk.red(
+						`\n🗑️  Tab ${tabId} closed, cleared session ${sessionId}\n`,
+					),
+				)
+			}
+		}
+	})
 
 	// 监听来自 content script 的消息
 	chrome.runtime.onMessage.addListener(
@@ -31,6 +71,13 @@ export default defineBackground(() => {
 		) => {
 			const handleMessage = async () => {
 				try {
+					// 记录收到的消息
+					logMessage('incoming', message.type, {
+						sessionId: message.sessionId,
+						tabId: sender.tab?.id,
+						payload: message.payload,
+					})
+
 					// 获取当前 API key（用于 popup 显示）
 					if (message.type === 'GET_API_KEY') {
 						return {
@@ -42,8 +89,17 @@ export default defineBackground(() => {
 					// 刷新 API key
 					if (message.type === 'REFRESH_API_KEY') {
 						apiKey = generateUUID()
-						authenticatedTabs.clear()
-						console.log('Refreshed API key:', apiKey)
+						authenticatedSessions.clear()
+						console.log(
+							chalk.magenta.bold(
+								`\n🔄 Refreshed API key: ${apiKey}`,
+							),
+						)
+						console.log(
+							chalk.red(
+								`   Cleared ${authenticatedSessions.size} sessions\n`,
+							),
+						)
 						return {
 							success: true,
 							data: apiKey,
@@ -53,6 +109,7 @@ export default defineBackground(() => {
 					// Link 认证
 					if (message.type === 'LINK') {
 						const { key } = message.payload
+						const { sessionId } = message
 						const tabId = sender.tab?.id
 
 						if (!tabId) {
@@ -62,12 +119,31 @@ export default defineBackground(() => {
 							}
 						}
 
+						if (!sessionId) {
+							return {
+								success: false,
+								error: 'No session ID',
+							}
+						}
+
 						if (key === apiKey) {
-							authenticatedTabs.set(tabId, true)
-							console.log(`Tab ${tabId} authenticated`)
+							authenticatedSessions.set(sessionId, {
+								key,
+								tabId,
+								timestamp: Date.now(),
+							})
+							console.log(
+								chalk.green.bold(
+									`\n✅ Session authenticated: ${sessionId.substring(
+										0,
+										12,
+									)}...`,
+								),
+							)
+							console.log(chalk.gray(`   Tab ID: ${tabId}\n`))
 							return {
 								success: true,
-								data: { authenticated: true },
+								data: { authenticated: true, sessionId },
 							}
 						} else {
 							return {
@@ -78,8 +154,16 @@ export default defineBackground(() => {
 					}
 
 					// 验证认证状态
-					const tabId = sender.tab?.id
-					if (!tabId || !authenticatedTabs.get(tabId)) {
+					const { sessionId } = message
+					if (!sessionId) {
+						return {
+							success: false,
+							error: 'No session ID',
+						}
+					}
+
+					const session = authenticatedSessions.get(sessionId)
+					if (!session || session.key !== apiKey) {
 						return {
 							success: false,
 							error: 'Not authenticated. Call link(key) first.',
@@ -135,6 +219,10 @@ export default defineBackground(() => {
 						error: 'Unknown message type',
 					}
 				} catch (error) {
+					console.log(
+						chalk.red.bold('\n❌ Error processing message:'),
+						error,
+					)
 					return {
 						success: false,
 						error:
@@ -146,7 +234,14 @@ export default defineBackground(() => {
 			}
 
 			// 异步处理并发送响应
-			handleMessage().then(sendResponse)
+			handleMessage().then((response) => {
+				logMessage('outgoing', message.type, {
+					success: response.success,
+					data: (response as any).data,
+					error: (response as any).error,
+				})
+				sendResponse(response)
+			})
 			return true // 保持消息通道开启以支持异步响应
 		},
 	)
