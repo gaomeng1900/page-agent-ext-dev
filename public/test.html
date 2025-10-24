@@ -55,17 +55,35 @@
 		<h1>🚀 Page Agent Extension Test</h1>
 
 		<div class="section">
+			<h2>步骤 0: 认证</h2>
+			<p>从插件弹窗复制 Key，输入后点击认证</p>
+			<input
+				type="text"
+				id="keyInput"
+				placeholder="粘贴 API Key"
+				style="
+					width: 100%;
+					padding: 8px;
+					margin-bottom: 10px;
+					font-family: monospace;
+				"
+			/>
+			<button onclick="testLink()">认证 Link</button>
+			<pre id="output0">等待认证...</pre>
+		</div>
+
+		<div class="section">
 			<h2>测试 1: 获取所有 Tabs</h2>
-			<button onclick="testGetTabs()">运行 getTabs()</button>
-			<pre id="output1">点击按钮运行测试...</pre>
+			<button onclick="testListTabs()">运行 listTabs()</button>
+			<pre id="output1">先认证后再测试...</pre>
 		</div>
 
 		<div class="section">
 			<h2>测试 2: 在当前 Tab 执行代码</h2>
 			<button onclick="testExecuteCurrent()">
-				运行 execute() - 获取当前页面标题
+				运行 executeScript() - 获取当前页面标题
 			</button>
-			<pre id="output2">点击按钮运行测试...</pre>
+			<pre id="output2">先认证后再测试...</pre>
 		</div>
 
 		<div class="section">
@@ -74,15 +92,33 @@
 			<button onclick="testExecuteOther()">
 				在第一个 Tab 中获取标题
 			</button>
-			<pre id="output3">点击按钮运行测试...</pre>
+			<pre id="output3">先认证后再测试...</pre>
 		</div>
-
 		<script>
-			async function testGetTabs() {
+			async function testLink() {
+				const output = document.getElementById('output0')
+				const keyInput = document.getElementById('keyInput')
+				const key = keyInput.value.trim()
+
+				try {
+					output.textContent = '正在认证...'
+					const result = await pageAgentExtension.link(key)
+					output.textContent = `✅ 认证成功！\n${JSON.stringify(
+						result,
+						null,
+						2,
+					)}`
+				} catch (error) {
+					output.textContent = `❌ 认证失败: ${error.message}`
+					console.error(error)
+				}
+			}
+
+			async function testListTabs() {
 				const output = document.getElementById('output1')
 				try {
 					output.textContent = '正在获取 tabs...'
-					const tabs = await getTabs()
+					const tabs = await pageAgentExtension.listTabs()
 					output.textContent = JSON.stringify(tabs, null, 2)
 				} catch (error) {
 					output.textContent = `错误: ${error.message}`
@@ -94,14 +130,14 @@
 				const output = document.getElementById('output2')
 				try {
 					output.textContent = '正在执行代码...'
-					const tabs = await getTabs()
+					const tabs = await pageAgentExtension.listTabs()
 					const currentTab = tabs.find((t) => t.active)
 
 					if (!currentTab) {
 						throw new Error('找不到当前 tab')
 					}
 
-					const result = await execute(
+					const result = await pageAgentExtension.executeScript(
 						currentTab.id,
 						'document.title',
 					)
@@ -120,7 +156,7 @@
 				const output = document.getElementById('output3')
 				try {
 					output.textContent = '正在执行代码...'
-					const tabs = await getTabs()
+					const tabs = await pageAgentExtension.listTabs()
 
 					if (tabs.length < 2) {
 						output.textContent = '请先打开至少 2 个 tabs'
@@ -128,7 +164,10 @@
 					}
 
 					const firstTab = tabs[0]
-					const result = await execute(firstTab.id, 'document.title')
+					const result = await pageAgentExtension.executeScript(
+						firstTab.id,
+						'document.title',
+					)
 
 					output.textContent = `在 Tab ${firstTab.id} (${
 						firstTab.title

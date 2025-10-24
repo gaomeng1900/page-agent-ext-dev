@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Page Agent Extension</title>
+		<style>
+			body {
+				width: 320px;
+				min-height: 200px;
+				padding: 20px;
+				font-family: system-ui, -apple-system, sans-serif;
+				margin: 0;
+			}
+
+			h2 {
+				margin: 0 0 16px 0;
+				font-size: 18px;
+				color: #333;
+			}
+
+			.key-container {
+				background: #f5f5f5;
+				padding: 12px;
+				border-radius: 6px;
+				margin-bottom: 16px;
+			}
+
+			.key-label {
+				font-size: 12px;
+				color: #666;
+				margin-bottom: 6px;
+			}
+
+			.key-value {
+				font-family: 'Monaco', 'Menlo', monospace;
+				font-size: 11px;
+				word-break: break-all;
+				color: #0066cc;
+				background: white;
+				padding: 8px;
+				border-radius: 4px;
+				border: 1px solid #ddd;
+			}
+
+			.actions {
+				display: flex;
+				gap: 8px;
+			}
+
+			button {
+				flex: 1;
+				padding: 8px 16px;
+				font-size: 13px;
+				cursor: pointer;
+				border: none;
+				border-radius: 4px;
+				font-weight: 500;
+			}
+
+			.btn-primary {
+				background: #0066cc;
+				color: white;
+			}
+
+			.btn-primary:hover {
+				background: #0052a3;
+			}
+
+			.btn-secondary {
+				background: #e0e0e0;
+				color: #333;
+			}
+
+			.btn-secondary:hover {
+				background: #d0d0d0;
+			}
+
+			.status {
+				margin-top: 12px;
+				padding: 8px;
+				border-radius: 4px;
+				font-size: 12px;
+				display: none;
+			}
+
+			.status.success {
+				background: #d4edda;
+				color: #155724;
+				display: block;
+			}
+
+			.status.error {
+				background: #f8d7da;
+				color: #721c24;
+				display: block;
+			}
+
+			.description {
+				font-size: 13px;
+				color: #666;
+				margin-bottom: 16px;
+				line-height: 1.5;
+			}
+		</style>
+	</head>
+	<body>
+		<h2>🔐 Page Agent Extension</h2>
+
+		<div class="description">
+			复制下面的 Key，在控制页面中调用
+			<code>pageAgentExtension.link(key)</code> 进行认证。
+		</div>
+
+		<div class="key-container">
+			<div class="key-label">API Key</div>
+			<div class="key-value" id="apiKey">Loading...</div>
+		</div>
+
+		<div class="actions">
+			<button class="btn-primary" id="copyBtn">复制 Key</button>
+			<button class="btn-secondary" id="refreshBtn">刷新 Key</button>
+		</div>
+
+		<div class="status" id="status"></div>
+
+		<script src="./main.js" type="module"></script>
+	</body>
+</html>

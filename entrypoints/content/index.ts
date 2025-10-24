@@ -19,7 +19,14 @@ export default defineContentScript({
 
 			try {
 				let response
-				if (action === 'GET_TABS') {
+
+				// 根据不同的 action 转发到 background
+				if (action === 'LINK') {
+					response = await chrome.runtime.sendMessage({
+						type: 'LINK',
+						payload,
+					})
+				} else if (action === 'GET_TABS') {
 					response = await chrome.runtime.sendMessage({
 						type: 'GET_TABS',
 					})
