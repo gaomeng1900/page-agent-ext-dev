@@ -107,6 +107,28 @@ export default defineUnlistedScript(() => {
 			}
 			return await sendMessage('EXECUTE_SCRIPT', { tabId, code: script })
 		},
+
+		/**
+		 * 打开新的 tab
+		 * @param url - 要打开的 URL
+		 */
+		async openTab(url: string) {
+			if (typeof url !== 'string') {
+				throw new Error('url must be a string')
+			}
+			return await sendMessage('OPEN_TAB', { url })
+		},
+
+		/**
+		 * 关闭指定的 tab
+		 * @param tabId - 要关闭的 tab 的 ID
+		 */
+		async closeTab(tabId: number) {
+			if (typeof tabId !== 'number') {
+				throw new Error('tabId must be a number')
+			}
+			return await sendMessage('CLOSE_TAB', { tabId })
+		},
 	}
 
 	console.log(
@@ -114,7 +136,7 @@ export default defineUnlistedScript(() => {
 		'color: #4caf50; font-weight: bold; font-size: 14px',
 	)
 	console.log(
-		'%c   • pageAgentExtension.link(key)\n   • pageAgentExtension.listTabs()\n   • pageAgentExtension.executeScript(tabId, script)',
+		'%c   • pageAgentExtension.link(key)\n   • pageAgentExtension.listTabs()\n   • pageAgentExtension.executeScript(tabId, script)\n   • pageAgentExtension.openTab(url)\n   • pageAgentExtension.closeTab(tabId)',
 		'color: #999; font-size: 12px',
 	)
 })

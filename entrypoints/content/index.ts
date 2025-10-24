@@ -60,6 +60,18 @@ export default defineContentScript({
 						sessionId,
 						payload,
 					})
+				} else if (action === 'OPEN_TAB') {
+					response = await chrome.runtime.sendMessage({
+						type: 'OPEN_TAB',
+						sessionId,
+						payload,
+					})
+				} else if (action === 'CLOSE_TAB') {
+					response = await chrome.runtime.sendMessage({
+						type: 'CLOSE_TAB',
+						sessionId,
+						payload,
+					})
 				} else {
 					response = {
 						success: false,

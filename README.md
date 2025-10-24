@@ -173,7 +173,7 @@ await pageAgentExtension.executeScript(123, `
 
 ## 测试页面
 
-访问 `http://localhost:3001/test.html` 可以看到预置的测试页面，包含：
+访问 `http://localhost:3000/test.html` 可以看到预置的测试页面，包含：
 
 - 认证流程测试
 - 获取 tabs 测试

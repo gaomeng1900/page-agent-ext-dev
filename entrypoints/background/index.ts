@@ -214,6 +214,48 @@ export default defineBackground(() => {
 						}
 					}
 
+					if (message.type === 'OPEN_TAB') {
+						const { url } = message.payload
+
+						if (!url) {
+							return {
+								success: false,
+								error: 'Missing url',
+							}
+						}
+
+						const newTab = await chrome.tabs.create({ url })
+
+						return {
+							success: true,
+							data: {
+								id: newTab.id,
+								title: newTab.title,
+								url: newTab.url,
+								active: newTab.active,
+								windowId: newTab.windowId,
+							},
+						}
+					}
+
+					if (message.type === 'CLOSE_TAB') {
+						const { tabId } = message.payload
+
+						if (!tabId) {
+							return {
+								success: false,
+								error: 'Missing tabId',
+							}
+						}
+
+						await chrome.tabs.remove(tabId)
+
+						return {
+							success: true,
+							data: { tabId, closed: true },
+						}
+					}
+
 					return {
 						success: false,
 						error: 'Unknown message type',
