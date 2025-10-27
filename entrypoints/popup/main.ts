@@ -32,6 +32,13 @@ document.getElementById('refreshBtn')!.addEventListener('click', async () => {
 	}
 })
 
+// 打开 Agent Panel
+document.getElementById('openAgentBtn')!.addEventListener('click', async () => {
+	// 在新标签页中打开 panel
+	const panelUrl = chrome.runtime.getURL('panel/index.html')
+	await chrome.tabs.create({ url: panelUrl })
+})
+
 function showStatus(message: string, type: 'success' | 'error') {
 	const statusEl = document.getElementById('status')!
 	statusEl.textContent = message

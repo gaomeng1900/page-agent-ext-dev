@@ -1,8 +1,45 @@
 # Page Agent Extension
 
-一个 Chrome 浏览器扩展，允许特定网页通过认证后控制浏览器的其他 tab，包括获取 tab 列表、执行脚本等高权限操作。
+一个 Chrome 浏览器扩展，提供两大核心功能：
 
-## 核心功能
+1. **页面控制 API** - 允许特定网页通过认证后控制浏览器的其他 tab
+2. **🆕 AI Agent** - 基于视觉的浏览器自动化 Agent，参考 [alibaba/page-agent](https://github.com/alibaba/page-agent) 架构
+
+---
+
+## 🤖 AI Agent（新功能）
+
+> 详细文档请查看：[AGENT_README.md](./AGENT_README.md)
+
+### 核心特性
+
+- **视觉驱动** - 使用截图代替 DOM 清洗，让 LLM 直接"看到"页面
+- **跨 Tab 控制** - 可以操作所有标签页，不局限于单页面
+- **9 个工具** - open_tab, active_tab, click, keydown, scroll_page 等
+- **实时反馈** - 显示执行历史、截图、工具调用、Token 消耗
+
+### 快速开始
+
+1. 点击扩展图标 → **"打开 Agent 控制面板"**
+2. 配置 OpenAI API Key 和模型（推荐 `gpt-4o`）
+3. 输入任务，例如：`"打开 Google 并搜索 'AI agents'"`
+4. 点击 **"Start Agent"** 开始执行
+
+### 与 page-agent 的对比
+
+| 特性 | page-agent | Browser Agent |
+|------|-----------|---------------|
+| 运行环境 | 页面内（Web） | 浏览器扩展 |
+| 页面感知 | DOM 清洗 + 元素标注 | 截图（视觉输入） |
+| 跨 Tab | ❌ | ✅ |
+| 截图权限 | ❌ | ✅ |
+| Canvas/Video | ❌ 无法感知 | ✅ 可见即可感知 |
+
+---
+
+## 🔐 页面控制 API
+
+### 核心功能
 
 - **Tab 管理**：获取所有打开的 tabs 信息（ID、标题、URL 等）
 - **脚本执行**：在指定 tab 中动态执行 JavaScript 代码并返回结果

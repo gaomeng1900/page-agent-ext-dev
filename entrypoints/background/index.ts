@@ -1,4 +1,8 @@
 import chalk from 'chalk'
+import { BrowserAgent, type AgentConfig } from './agent'
+
+// 存储运行中的 agents: agentId -> BrowserAgent
+const runningAgents = new Map<string, BrowserAgent>()
 
 // 生成随机 UUID
 function generateUUID(): string {
@@ -253,6 +257,175 @@ export default defineBackground(() => {
 						return {
 							success: true,
 							data: { tabId, closed: true },
+						}
+					}
+
+					// ============ Agent API ============
+
+					// 启动 Agent
+					if (message.type === 'AGENT_START') {
+						const { agentId, task, config } = message.payload
+
+						if (!agentId || !task || !config) {
+							return {
+								success: false,
+								error: 'Missing agentId, task, or config',
+							}
+						}
+
+						// 检查是否已有运行中的 agent
+						if (runningAgents.has(agentId)) {
+							return {
+								success: false,
+								error: `Agent ${agentId} is already running`,
+							}
+						}
+
+						console.log(
+							chalk.magenta.bold(
+								`\n🤖 Starting agent ${agentId}...\n`,
+							),
+						)
+
+						try {
+							// 创建并启动 agent（异步执行）
+							const agent = new BrowserAgent(
+								config as AgentConfig,
+							)
+							runningAgents.set(agentId, agent)
+
+							// 异步执行任务，不阻塞响应
+							agent
+								.execute(task)
+								.then((result) => {
+									console.log(
+										chalk.green.bold(
+											`\n✅ Agent ${agentId} completed\n`,
+										),
+									)
+									console.log(
+										chalk.gray('   Result:'),
+										result,
+									)
+
+									// 任务完成后从 map 中移除
+									runningAgents.delete(agentId)
+
+									// 通知 UI（如果有的话）
+									// chrome.runtime.sendMessage({
+									// 	type: 'AGENT_COMPLETED',
+									// 	agentId,
+									// 	result,
+									// })
+								})
+								.catch((error) => {
+									console.error(
+										chalk.red.bold(
+											`\n❌ Agent ${agentId} error: ${error.message}\n`,
+										),
+									)
+									runningAgents.delete(agentId)
+								})
+
+							return {
+								success: true,
+								data: {
+									agentId,
+									status: 'started',
+								},
+							}
+						} catch (error: any) {
+							return {
+								success: false,
+								error: error.message,
+							}
+						}
+					}
+
+					// 获取 Agent 状态
+					if (message.type === 'AGENT_STATUS') {
+						const { agentId } = message.payload
+
+						if (!agentId) {
+							return {
+								success: false,
+								error: 'Missing agentId',
+							}
+						}
+
+						const agent = runningAgents.get(agentId)
+						if (!agent) {
+							return {
+								success: true,
+								data: {
+									agentId,
+									status: 'not_found',
+									running: false,
+								},
+							}
+						}
+
+						return {
+							success: true,
+							data: {
+								agentId,
+								status: 'running',
+								running: true,
+								steps: agent.getHistory().length,
+								totalTokens: agent.getTotalTokens(),
+							},
+						}
+					}
+
+					// 获取 Agent 历史
+					if (message.type === 'AGENT_HISTORY') {
+						const { agentId } = message.payload
+
+						if (!agentId) {
+							return {
+								success: false,
+								error: 'Missing agentId',
+							}
+						}
+
+						const agent = runningAgents.get(agentId)
+						if (!agent) {
+							return {
+								success: false,
+								error: `Agent ${agentId} not found`,
+							}
+						}
+
+						return {
+							success: true,
+							data: {
+								agentId,
+								history: agent.getHistory(),
+								totalTokens: agent.getTotalTokens(),
+							},
+						}
+					}
+
+					// 停止 Agent（目前暂不支持，因为需要实现中断逻辑）
+					if (message.type === 'AGENT_STOP') {
+						const { agentId } = message.payload
+
+						if (!agentId) {
+							return {
+								success: false,
+								error: 'Missing agentId',
+							}
+						}
+
+						// TODO: 实现 agent 中断逻辑
+						runningAgents.delete(agentId)
+
+						return {
+							success: true,
+							data: {
+								agentId,
+								status: 'stopped',
+							},
 						}
 					}
 

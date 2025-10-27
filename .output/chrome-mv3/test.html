@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Page Agent Test</title>
+		<style>
+			body {
+				font-family: system-ui, -apple-system, sans-serif;
+				max-width: 800px;
+				margin: 40px auto;
+				padding: 20px;
+				line-height: 1.6;
+			}
+
+			h1 {
+				color: #333;
+			}
+
+			.section {
+				margin: 30px 0;
+				padding: 20px;
+				background: #f5f5f5;
+				border-radius: 8px;
+			}
+
+			button {
+				padding: 10px 20px;
+				margin: 5px;
+				font-size: 14px;
+				cursor: pointer;
+				background: #007bff;
+				color: white;
+				border: none;
+				border-radius: 4px;
+			}
+
+			button:hover {
+				background: #0056b3;
+			}
+
+			pre {
+				background: #fff;
+				padding: 15px;
+				border-radius: 4px;
+				overflow-x: auto;
+			}
+
+			#output {
+				min-height: 100px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>🚀 Page Agent Extension Test</h1>
+
+		<div class="section">
+			<h2>步骤 0: 认证</h2>
+			<p>从插件弹窗复制 Key，输入后点击认证</p>
+			<input
+				type="text"
+				id="keyInput"
+				placeholder="粘贴 API Key"
+				style="
+					width: 100%;
+					padding: 8px;
+					margin-bottom: 10px;
+					font-family: monospace;
+				"
+			/>
+			<button onclick="testLink()">认证 Link</button>
+			<pre id="output0">等待认证...</pre>
+		</div>
+
+		<div class="section">
+			<h2>测试 1: 获取所有 Tabs</h2>
+			<button onclick="testListTabs()">运行 listTabs()</button>
+			<pre id="output1">先认证后再测试...</pre>
+		</div>
+
+		<div class="section">
+			<h2>测试 2: 在当前 Tab 执行代码</h2>
+			<button onclick="testExecuteCurrent()">
+				运行 executeScript() - 获取当前页面标题
+			</button>
+			<pre id="output2">先认证后再测试...</pre>
+		</div>
+
+		<div class="section">
+			<h2>测试 3: 在其他 Tab 执行代码</h2>
+			<p>先打开几个其他 tab，然后点击下面的按钮</p>
+			<button onclick="testExecuteOther()">
+				在第一个 Tab 中获取标题
+			</button>
+			<pre id="output3">先认证后再测试...</pre>
+		</div>
+
+		<div class="section">
+			<h2>测试 4: 打开新 Tab</h2>
+			<input
+				type="text"
+				id="urlInput"
+				placeholder="输入网址，例如: https://www.google.com"
+				style="
+					width: 100%;
+					padding: 8px;
+					margin-bottom: 10px;
+					font-family: monospace;
+				"
+			/>
+			<button onclick="testOpenTab()">打开新 Tab</button>
+			<pre id="output4">先认证后再测试...</pre>
+		</div>
+
+		<div class="section">
+			<h2>测试 5: 关闭 Tab</h2>
+			<p>选择一个 tab 来关闭（不能关闭当前 tab）</p>
+			<button onclick="testCloseTab()">关闭第一个非当前 Tab</button>
+			<pre id="output5">先认证后再测试...</pre>
+		</div>
+		<script>
+			async function testLink() {
+				const output = document.getElementById('output0')
+				const keyInput = document.getElementById('keyInput')
+				const key = keyInput.value.trim()
+
+				try {
+					output.textContent = '正在认证...'
+					const result = await pageAgentExtension.link(key)
+					output.textContent = `✅ 认证成功！\n${JSON.stringify(
+						result,
+						null,
+						2,
+					)}`
+				} catch (error) {
+					output.textContent = `❌ 认证失败: ${error.message}`
+					console.error(error)
+				}
+			}
+
+			async function testListTabs() {
+				const output = document.getElementById('output1')
+				try {
+					output.textContent = '正在获取 tabs...'
+					const tabs = await pageAgentExtension.listTabs()
+					output.textContent = JSON.stringify(tabs, null, 2)
+				} catch (error) {
+					output.textContent = `错误: ${error.message}`
+					console.error(error)
+				}
+			}
+
+			async function testExecuteCurrent() {
+				const output = document.getElementById('output2')
+				try {
+					output.textContent = '正在执行代码...'
+					const tabs = await pageAgentExtension.listTabs()
+					const currentTab = tabs.find((t) => t.active)
+
+					if (!currentTab) {
+						throw new Error('找不到当前 tab')
+					}
+
+					const result = await pageAgentExtension.executeScript(
+						currentTab.id,
+						'document.title',
+					)
+					output.textContent = `执行结果:\n${JSON.stringify(
+						result,
+						null,
+						2,
+					)}`
+				} catch (error) {
+					output.textContent = `错误: ${error.message}`
+					console.error(error)
+				}
+			}
+
+			async function testExecuteOther() {
+				const output = document.getElementById('output3')
+				try {
+					output.textContent = '正在执行代码...'
+					const tabs = await pageAgentExtension.listTabs()
+
+					if (tabs.length < 2) {
+						output.textContent = '请先打开至少 2 个 tabs'
+						return
+					}
+
+					const firstTab = tabs[0]
+					const result = await pageAgentExtension.executeScript(
+						firstTab.id,
+						'document.title',
+					)
+
+					output.textContent = `在 Tab ${firstTab.id} (${
+						firstTab.title
+					}) 中执行结果:\n${JSON.stringify(result, null, 2)}`
+				} catch (error) {
+					output.textContent = `错误: ${error.message}`
+					console.error(error)
+				}
+			}
+
+			async function testOpenTab() {
+				const output = document.getElementById('output4')
+				const urlInput = document.getElementById('urlInput')
+				const url = urlInput.value.trim() || 'https://www.google.com'
+
+				try {
+					output.textContent = '正在打开新 tab...'
+					const newTab = await pageAgentExtension.openTab(url)
+					output.textContent = `✅ 成功打开新 Tab!\n${JSON.stringify(
+						newTab,
+						null,
+						2,
+					)}`
+				} catch (error) {
+					output.textContent = `错误: ${error.message}`
+					console.error(error)
+				}
+			}
+
+			async function testCloseTab() {
+				const output = document.getElementById('output5')
+				try {
+					output.textContent = '正在获取 tabs...'
+					const tabs = await pageAgentExtension.listTabs()
+
+					if (tabs.length < 2) {
+						output.textContent =
+							'至少需要 2 个 tabs（不能关闭当前 tab）'
+						return
+					}
+
+					// 找到第一个非当前 tab
+					const targetTab = tabs.find((t) => !t.active)
+					if (!targetTab) {
+						output.textContent = '找不到可以关闭的 tab'
+						return
+					}
+
+					output.textContent = `正在关闭 Tab ${targetTab.id} (${targetTab.title})...`
+					const result = await pageAgentExtension.closeTab(
+						targetTab.id,
+					)
+
+					output.textContent = `✅ 成功关闭 Tab ${
+						targetTab.id
+					}!\n${JSON.stringify(result, null, 2)}`
+				} catch (error) {
+					output.textContent = `错误: ${error.message}`
+					console.error(error)
+				}
+			}
+		</script>
+	</body>
+</html>
