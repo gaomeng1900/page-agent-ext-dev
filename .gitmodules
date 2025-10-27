@@ -1,0 +1,3 @@
+[submodule "page-agent"]
+	path = page-agent
+	url = https://github.com/alibaba/page-agent.git
