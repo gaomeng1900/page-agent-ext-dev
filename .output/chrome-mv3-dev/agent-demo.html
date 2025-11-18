@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Browser Agent Demo</title>
+		<style>
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+					Roboto, sans-serif;
+				max-width: 800px;
+				margin: 40px auto;
+				padding: 20px;
+				background: #f5f5f5;
+			}
+
+			.container {
+				background: white;
+				padding: 30px;
+				border-radius: 12px;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			}
+
+			h1 {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+				margin-bottom: 20px;
+			}
+
+			.section {
+				margin-bottom: 24px;
+			}
+
+			.section h2 {
+				font-size: 18px;
+				margin-bottom: 12px;
+				color: #333;
+			}
+
+			.code-block {
+				background: #f9fafb;
+				border: 1px solid #e5e7eb;
+				border-radius: 6px;
+				padding: 12px;
+				font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+				font-size: 13px;
+				overflow-x: auto;
+				margin-bottom: 12px;
+			}
+
+			.info-box {
+				background: #eff6ff;
+				border-left: 4px solid #3b82f6;
+				padding: 12px;
+				margin-bottom: 12px;
+				border-radius: 4px;
+			}
+
+			.success-box {
+				background: #f0fff4;
+				border-left: 4px solid #10b981;
+				padding: 12px;
+				margin-bottom: 12px;
+				border-radius: 4px;
+			}
+
+			button {
+				background: #667eea;
+				color: white;
+				border: none;
+				padding: 10px 20px;
+				border-radius: 6px;
+				cursor: pointer;
+				font-size: 14px;
+				font-weight: 600;
+				margin-right: 8px;
+				margin-bottom: 8px;
+			}
+
+			button:hover {
+				background: #5568d3;
+			}
+
+			.example-list {
+				list-style: none;
+				padding: 0;
+			}
+
+			.example-list li {
+				padding: 8px 12px;
+				margin-bottom: 6px;
+				background: #f9fafb;
+				border-radius: 4px;
+				cursor: pointer;
+				transition: background 0.2s;
+			}
+
+			.example-list li:hover {
+				background: #e5e7eb;
+			}
+
+			.example-list li code {
+				color: #667eea;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1>🤖 Browser Agent Demo</h1>
+
+			<div class="info-box">
+				<strong>📝 使用步骤：</strong>
+				<ol style="margin: 8px 0 0 20px; padding: 0">
+					<li>点击扩展图标</li>
+					<li>点击 "打开 Agent 控制面板"</li>
+					<li>配置你的 OpenAI API Key</li>
+					<li>输入下面的示例任务</li>
+					<li>观察 Agent 自动执行</li>
+				</ol>
+			</div>
+
+			<div class="section">
+				<h2>📋 示例任务</h2>
+				<p>点击任意任务可以复制到剪贴板：</p>
+
+				<ul class="example-list">
+					<li onclick="copyText(this)">
+						<code>打开 Google 并搜索 'browser automation'</code>
+					</li>
+					<li onclick="copyText(this)">
+						<code
+							>Open GitHub, go to trending page, and show me the
+							top repository</code
+						>
+					</li>
+					<li onclick="copyText(this)">
+						<code>打开知乎，搜索'人工智能'，点击第一篇文章</code>
+					</li>
+					<li onclick="copyText(this)">
+						<code>在当前 tab 中向下滚动 3 次，然后返回顶部</code>
+					</li>
+					<li onclick="copyText(this)">
+						<code
+							>Open https://example.com in a new tab and read the
+							page title</code
+						>
+					</li>
+					<li onclick="copyText(this)">
+						<code>关闭所有标题包含 'test' 的标签页</code>
+					</li>
+				</ul>
+			</div>
+
+			<div class="section">
+				<h2>🔧 可用工具</h2>
+				<div class="code-block">
+					• open_tab - 打开新标签页<br />
+					• active_tab - 切换到指定标签页<br />
+					• close_tab - 关闭标签页<br />
+					• reload_tab - 重新加载页面<br />
+					• scroll_page - 滚动页面 (up/down/top/bottom)<br />
+					• click - 点击元素（CSS 选择器）<br />
+					• keydown - 键盘输入<br />
+					• wait - 等待指定时间<br />
+					• done - 标记任务完成
+				</div>
+			</div>
+
+			<div class="section">
+				<h2>💡 高级示例</h2>
+
+				<h3 style="font-size: 14px; margin-bottom: 8px">表单填写</h3>
+				<div class="code-block">
+					在当前页面找到搜索框，输入 'AI agents'，然后点击搜索按钮
+				</div>
+
+				<h3 style="font-size: 14px; margin-bottom: 8px">多步骤任务</h3>
+				<div class="code-block">
+					1. 打开 https://github.com<br />
+					2. 点击搜索框<br />
+					3. 输入 'page-agent'<br />
+					4. 点击搜索<br />
+					5. 打开第一个结果
+				</div>
+
+				<h3 style="font-size: 14px; margin-bottom: 8px">Tab 管理</h3>
+				<div class="code-block">
+					查看所有打开的标签页，关闭所有不活动的标签页，只保留当前标签页
+				</div>
+			</div>
+
+			<div class="section">
+				<h2>⚙️ 推荐配置</h2>
+				<div class="code-block">
+					<strong>Model:</strong> gpt-4o (必须支持视觉输入！)<br />
+					<strong>Base URL:</strong> https://api.openai.com/v1<br />
+					<strong>API Key:</strong> sk-... (你的 OpenAI API Key)
+				</div>
+			</div>
+
+			<div class="success-box">
+				<strong>✨ 提示：</strong>
+				<ul style="margin: 8px 0 0 20px; padding: 0">
+					<li>任务描述越具体，Agent 执行效果越好</li>
+					<li>Agent 可以"看到"页面截图，所以可以识别图像和布局</li>
+					<li>复杂任务会消耗更多 tokens，注意成本</li>
+					<li>第一次使用建议从简单任务开始</li>
+				</ul>
+			</div>
+
+			<div style="margin-top: 32px; text-align: center; color: #888">
+				<p>
+					参考项目：<a
+						href="https://github.com/alibaba/page-agent"
+						target="_blank"
+						style="color: #667eea"
+						>alibaba/page-agent</a
+					>
+				</p>
+			</div>
+		</div>
+
+		<script>
+			function copyText(element) {
+				const code = element.querySelector('code')
+				const text = code.textContent
+				navigator.clipboard.writeText(text).then(() => {
+					const originalBg = element.style.background
+					element.style.background = '#d1fae5'
+					element.innerHTML = `<code style="color: #10b981">✅ 已复制: ${text}</code>`
+					setTimeout(() => {
+						element.style.background = originalBg
+						element.innerHTML = `<code>${text}</code>`
+					}, 1500)
+				})
+			}
+		</script>
+	</body>
+</html>

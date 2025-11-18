@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 	<head>
-		<script src="http://localhost:3000/@id/virtual:wxt-inline-script?FV4Dkd3rOhdzKGzidlMXkjXlfp9vKu7IZB71e-yFG-I" type="module"></script>
+		<script src="http://localhost:3001/@id/virtual:wxt-inline-script?FV4Dkd3rOhdzKGzidlMXkjXlfp9vKu7IZB71e-yFG-I" type="module"></script>
 
-		<script type="module" src="http://localhost:3000/@vite/client"></script>
-<script src="http://localhost:3000/@id/virtual:wxt-html-plugins" type="module"></script>
+		<script type="module" src="http://localhost:3001/@vite/client"></script>
+<script src="http://localhost:3001/@id/virtual:wxt-html-plugins" type="module"></script>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Page Agent Extension</title>
@@ -50,6 +50,7 @@
 			.actions {
 				display: flex;
 				gap: 8px;
+				margin-bottom: 16px;
 			}
 
 			button {
@@ -106,7 +107,41 @@
 				margin-bottom: 16px;
 				line-height: 1.5;
 			}
-		</style>  <script type="module" crossorigin="" src="/chunks/popup-BWk36kL9.js"></script>
+
+			.divider {
+				height: 1px;
+				background: #e0e0e0;
+				margin: 16px 0;
+			}
+
+			.agent-section {
+				margin-top: 12px;
+			}
+
+			.agent-section h3 {
+				font-size: 14px;
+				margin: 0 0 8px 0;
+				color: #333;
+			}
+
+			.btn-agent {
+				width: 100%;
+				padding: 10px 16px;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+				border: none;
+				border-radius: 6px;
+				font-size: 14px;
+				font-weight: 600;
+				cursor: pointer;
+				transition: transform 0.2s;
+			}
+
+			.btn-agent:hover {
+				transform: translateY(-1px);
+				box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+			}
+		</style>  <script type="module" crossorigin="" src="/chunks/reload-html-D3oq4d02.js"></script>
 </head>
 	<body>
 		<h2>🔐 Page Agent Extension</h2>
@@ -126,8 +161,17 @@
 			<button class="btn-secondary" id="refreshBtn">刷新 Key</button>
 		</div>
 
+		<div class="divider"></div>
+
+		<div class="agent-section">
+			<h3>🤖 AI Agent</h3>
+			<button class="btn-agent" id="openAgentBtn">
+				打开 Agent 控制面板
+			</button>
+		</div>
+
 		<div class="status" id="status"></div>
 
-		<script src="http://localhost:3000/entrypoints/popup/main.js" type="module"></script>
+		<script src="http://localhost:3001/entrypoints/popup/main.js" type="module"></script>
 	</body>
 </html>

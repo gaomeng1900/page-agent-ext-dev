@@ -35,7 +35,7 @@ document.getElementById('refreshBtn')!.addEventListener('click', async () => {
 // 打开 Agent Panel
 document.getElementById('openAgentBtn')!.addEventListener('click', async () => {
 	// 在新标签页中打开 panel
-	const panelUrl = chrome.runtime.getURL('panel/index.html')
+	const panelUrl = chrome.runtime.getURL('panel.html')
 	await chrome.tabs.create({ url: panelUrl })
 })
 
